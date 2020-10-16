@@ -70,7 +70,13 @@ export function makeMockServer({ environment = 'development' } = {}) {
             message: 'Invalid authentication data. Please try to login again.',
           });
         }
-        aliases.push(JSON.parse(request.requestBody));
+        const body = JSON.parse(request.requestBody);
+        if (aliases.some((alias) => alias.address === body.address)) {
+          return new Response(409, undefined, {
+            message: `Alias ${body.address} already exists`,
+          });
+        }
+        aliases.push(body);
         return new Response(204);
       });
 
@@ -83,9 +89,15 @@ export function makeMockServer({ environment = 'development' } = {}) {
         if (
           aliases.some((alias) => alias.address === request.params['alias'])
         ) {
+          const body = JSON.parse(request.requestBody);
+          if (aliases.some((alias) => alias.address === body.address)) {
+            return new Response(409, undefined, {
+              message: `Alias ${body.address} already exists`,
+            });
+          }
           aliases = aliases.map((alias) => {
             if (alias.address === request.params['alias']) {
-              return { address: JSON.parse(request.requestBody).address };
+              return { address: body.address };
             }
             return alias;
           });
@@ -93,6 +105,27 @@ export function makeMockServer({ environment = 'development' } = {}) {
         } else {
           return new Response(404, undefined, {
             message: 'Alias not found',
+          });
+        }
+      });
+
+      this.delete('/api/account/alias/:alias', (schema, request) => {
+        if (request.requestHeaders['Authorization'] != 'Bearer TOKEN') {
+          return new Response(401, undefined, {
+            message: 'Invalid authentication data. Please try to login again.',
+          });
+        }
+
+        if (
+          aliases.some((alias) => alias.address === request.params['alias'])
+        ) {
+          aliases = aliases.filter(
+            (alias) => alias.address !== request.params['alias'],
+          );
+          return new Response(204);
+        } else {
+          return new Response(404, undefined, {
+            message: 'Alias not found.',
           });
         }
       });

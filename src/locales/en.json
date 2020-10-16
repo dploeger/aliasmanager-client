@@ -4,5 +4,7 @@
   "login.password": "Password",
   "dialog.login": "Login",
   "newalias.alias.placeholder": "New alias",
-  "newalias.description.placeholder": "Description"
+  "newalias.description.placeholder": "Description",
+  "errors.409": "Alias {alias} already exists.",
+  "errors.404": "Alias {alias} not found."
 }

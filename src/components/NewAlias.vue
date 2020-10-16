@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-alert :type="alertType" :value="alertVisible">
+    <v-alert v-model="alertVisible" :type="alertType" dismissible>
       {{ alertMessage }}
     </v-alert>
     <v-form @submit="addAlias">
@@ -68,9 +68,18 @@ export default class NewAlias extends Vue {
       );
       this.alias = '';
       this.$emit('new-alias-created');
-    } catch (e) {
+    } catch (error) {
       this.alertType = 'error';
-      this.alertMessage = e.message;
+      switch (error.response.status) {
+        case 409:
+          this.alertMessage = this.$t('errors.409', {
+            alias: this.alias,
+          }) as string;
+          break;
+        case 401:
+          account.token = null;
+          break;
+      }
       this.alertVisible = true;
     }
   }
