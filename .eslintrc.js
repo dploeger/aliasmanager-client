@@ -1,24 +1,16 @@
 module.exports = {
-  parser: '@typescript-eslint/parser',
+  parser: 'vue-eslint-parser',
   parserOptions: {
-    project: 'tsconfig.json',
-    sourceType: 'module',
+    parser: '@typescript-eslint/parser',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
-  extends: [
-    'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier',
-    'prettier/@typescript-eslint',
-  ],
   root: true,
-  env: {
-    node: true,
-    jest: true,
-  },
+  extends: [
+    'plugin:vue/vue3-recommended',
+    'plugin:prettier/recommended',
+    'eslint:recommended',
+  ],
   rules: {
-    '@typescript-eslint/interface-name-prefix': 'off',
-    '@typescript-eslint/explicit-function-return-type': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
+    'no-undef': 'off',
+    'vue/max-attributes-per-line': 'off',
   },
 };

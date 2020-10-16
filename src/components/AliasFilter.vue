@@ -1,11 +1,11 @@
 <template>
   <div>
     <v-text-field
-      v-on:keyup="$emit('set-filter', filter)"
       v-model="filter"
       hint="Enter a filter text"
       label="Filter"
-    ></v-text-field>
+      @keyup="$emit('set-filter', filter)"
+    />
   </div>
 </template>
 

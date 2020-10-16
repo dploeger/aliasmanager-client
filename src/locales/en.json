@@ -1,4 +1,8 @@
 {
   "login.title": "Login",
-  "dialog.login": "Login"
+  "login.username": "Username",
+  "login.password": "Password",
+  "dialog.login": "Login",
+  "newalias.alias.placeholder": "New alias",
+  "newalias.description.placeholder": "Description"
 }

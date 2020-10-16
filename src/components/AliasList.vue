@@ -4,26 +4,28 @@
       {{ alertMessage }}
     </v-alert>
     <AliasFilter
-      v-on:set-filter="
+      @set-filter="
         filter = $event;
         loadAliases();
       "
     />
     <v-data-table :items="aliases" :loading="loading" :headers="headers">
-      <template v-slot:item.address="props">
+      <template #[`item.address`]="props">
         <v-edit-dialog
-          @save="save"
+          v-model:return-value="props.item.address"
           persistent
           large
-          return-value="props.item.address"
+          @open="open(props.item.address)"
+          @save="save(props.item.address)"
         >
           {{ props.item.address }}
-          <template v-slot:input>
+          <template #input>
             <v-text-field
+              ref="editInput"
               v-model="props.item.address"
               label="Edit"
               single-line
-            ></v-text-field>
+            />
           </template>
         </v-edit-dialog>
       </template>
@@ -35,10 +37,13 @@
 import Component from 'vue-class-component';
 import Vue from 'vue';
 import AliasFilter from '@/components/AliasFilter.vue';
-import { Alias } from '@/data/Alias';
-import VDataTableHeader from 'vuetify/src/components/VDataTable/VDataTableHeader';
+//import { Alias } from '@/data/Alias';
 import Axios from 'axios';
 import { Prop, Watch } from 'vue-property-decorator';
+import { getModule } from 'vuex-module-decorators';
+import { Account } from '@/stores/modules/Account';
+
+const account = getModule(Account);
 
 @Component({
   name: 'AliasList',
@@ -58,20 +63,21 @@ export default class AliasList extends Vue {
       text: 'Address',
       value: 'address',
     },
-    {
-      text: 'Description',
-      value: 'description',
-    },
   ];
+  public oldAddress = '';
+
+  created() {
+    this.$on('refresh', this.loadAliases);
+  }
 
   async loadAliases() {
     try {
       this.loading = true;
       const response = await Axios.get(
-        `/account/${this.$store.state.username}/alias?filter=${this.filter}`,
+        `/api/account/alias?filter=${this.filter}`,
         {
           headers: {
-            Authorization: `Bearer ${this.$store.state.token}`,
+            Authorization: `Bearer ${account.token}`,
           },
         },
       );
@@ -93,8 +99,30 @@ export default class AliasList extends Vue {
     }
   }
 
-  async save() {
-    debugger;
+  async open(oldAddress: string) {
+    this.oldAddress = oldAddress;
+  }
+
+  async save(newAddress: string) {
+    try {
+      await Axios.put(
+        `/api/account/alias/${this.oldAddress}`,
+        {
+          address: newAddress,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${account.token}`,
+          },
+        },
+      );
+      return this.loadAliases();
+    } catch (e) {
+      this.loading = false;
+      this.alertMessage = e.response.data.message;
+      this.alertType = 'error';
+      this.alertVisible = true;
+    }
   }
 }
 </script>
