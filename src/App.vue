@@ -3,7 +3,7 @@
     <v-app-bar app color="indigo" dark>
       <v-toolbar-title>Aliasmanager</v-toolbar-title>
       <v-spacer />
-      <v-btn icon @click="logout">
+      <v-btn title="Logout" icon @click="logout">
         <v-icon>mdi-exit-to-app</v-icon>
       </v-btn>
     </v-app-bar>

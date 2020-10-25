@@ -17,8 +17,8 @@
             color="primary"
             type="submit"
             icon
+            title="Add alias"
             :disabled="!aliasValid"
-            tabindex="-1"
             @click="addAlias"
           >
             <v-icon>mdi-account-plus</v-icon>

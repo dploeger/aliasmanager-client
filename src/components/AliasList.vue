@@ -11,26 +11,42 @@
     />
     <v-data-table :items="aliases" :loading="loading" :headers="headers">
       <template #[`item.address`]="props">
-        <v-edit-dialog
-          v-model:return-value="props.item.address"
-          persistent
-          large
-          @open="open(props.item.address)"
-          @save="save(props.item.address)"
-        >
-          {{ props.item.address }}
-          <template #input>
-            <v-text-field
-              ref="editInput"
-              v-model="props.item.address"
-              label="Edit"
-              single-line
-            />
+        <v-dialog persistent>
+          <v-card>
+            <v-card-title>Edit {{ props.item.address }}</v-card-title>
+            <v-card-text>
+              <v-text-field
+                ref="editInput"
+                v-model="oldAddress"
+                label="Edit"
+                single-line
+              />
+              <v-card-actions>
+                <v-spacer />
+                <v-btn text color="primary"> Ok </v-btn>
+                <v-btn text color="cancel">Cancel </v-btn>
+              </v-card-actions>
+            </v-card-text>
+          </v-card>
+          <template #activator="{ on }">
+            <v-btn
+              icon
+              :title="`Edit ${props.item.address}`"
+              v-on="editAddress(props.item.address, on)"
+            >
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
           </template>
-        </v-edit-dialog>
+        </v-dialog>
+        <span tabindex="0">{{ props.item.address }}</span>
       </template>
       <template #[`item.delete`]="props">
-        <v-btn icon @click="deleteAlias(props.item.address)">
+        <v-btn
+          icon
+          :title="`Delete alias ${props.item.address}`"
+          tabindex="0"
+          @click="deleteAlias(props.item.address)"
+        >
           <v-icon>mdi-delete</v-icon>
         </v-btn>
       </template>
@@ -113,8 +129,9 @@ export default class AliasList extends Vue {
     }
   }
 
-  async open(oldAddress: string) {
+  editAddress(oldAddress: string, eventHandler) {
     this.oldAddress = oldAddress;
+    eventHandler.click();
   }
 
   async save(newAddress: string) {

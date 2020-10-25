@@ -9,7 +9,7 @@
     <div>
       <AliasList ref="alias-list" :logged-in="loggedIn" />
     </div>
-    <v-dialog v-model="dialog" persistent>
+    <v-dialog v-model="dialog" data-test="loginDialog" persistent>
       <v-form @submit="login">
         <v-card>
           <v-card-title>{{ $t('login.title') }}</v-card-title>
@@ -20,11 +20,13 @@
             <v-text-field
               ref="usernameInput"
               v-model="username"
+              autocomplete="username"
               :label="$t('login.username')"
               :hint="$t('login.username')"
             />
             <v-text-field
               v-model="password"
+              autocomplete="current-password"
               :hint="$t('login.password')"
               :label="$t('login.password')"
               type="password"
