@@ -1,42 +1,44 @@
 <template>
   <div>
-    <v-alert v-model="alertVisible" :type="alertType" dismissible>
+    <b-alert
+      v-model="alertVisible"
+      data-test="newAliasAlert"
+      :variant="alertType"
+      dismissible
+    >
       {{ alertMessage }}
-    </v-alert>
-    <v-form @submit="addAlias">
-      <v-text-field
-        ref="input"
-        v-model="alias"
-        :placeholder="$t('newalias.alias.placeholder')"
-        :error="!aliasValid"
-        :error-count="aliasValid ? 0 : 1"
-        :error-messages="aliasValid ? '' : 'Invalid E-Mailaddress'"
-      >
-        <template #append>
-          <v-btn
-            color="primary"
-            type="submit"
-            icon
-            title="Add alias"
-            :disabled="!aliasValid"
+    </b-alert>
+    <b-form data-test="newAliasForm" @submit="addAlias">
+      <b-input-group>
+        <b-form-input
+          ref="input"
+          v-model="alias"
+          data-test="newAliasInput"
+          :placeholder="$t('ui.alias.placeholder')"
+          :state="aliasValid"
+          type="email"
+        />
+        <b-input-group-append>
+          <b-btn
+            variant="primary"
+            data-test="newAliasButton"
+            squared
+            :title="$t('ui.alias.create')"
             @click="addAlias"
           >
-            <v-icon>mdi-account-plus</v-icon>
-          </v-btn>
-        </template>
-      </v-text-field>
-    </v-form>
+            <b-icon-plus />
+          </b-btn>
+        </b-input-group-append>
+      </b-input-group>
+    </b-form>
   </div>
 </template>
 
 <script lang="ts">
 import Component from 'vue-class-component';
 import Vue from 'vue';
-import { getModule } from 'vuex-module-decorators';
-import { Account } from '@/stores/modules/Account';
 import Axios from 'axios';
-
-const account = getModule(Account);
+import { getEmitter } from '@/emitter';
 
 @Component({
   name: 'NewAlias',
@@ -44,32 +46,28 @@ const account = getModule(Account);
 export default class NewAlias extends Vue {
   public alias: string = '';
   public alertVisible: boolean = false;
-  public alertType: string = 'error';
+  public alertType: string = 'danger';
   public alertMessage: string = '';
   public eMailRegex: RegExp = /^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$/;
 
-  public get aliasValid(): boolean {
-    return this.alias === '' || this.eMailRegex.test(this.alias);
+  public get aliasValid(): boolean | null {
+    if (this.alias === '') {
+      return null;
+    }
+    return this.eMailRegex.test(this.alias);
   }
 
   public async addAlias(e: Event) {
     e.preventDefault();
     try {
-      await Axios.post(
-        `/api/account/alias`,
-        {
-          address: this.alias,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${account.token}`,
-          },
-        },
-      );
+      await Axios.post(`/api/account/alias`, {
+        address: this.alias,
+      });
       this.alias = '';
-      this.$emit('new-alias-created');
+      getEmitter().emit('refresh');
+      this.alertVisible = false;
     } catch (error) {
-      this.alertType = 'error';
+      this.alertType = 'danger';
       switch (error.response.status) {
         case 409:
           this.alertMessage = this.$t('errors.409', {
@@ -77,7 +75,7 @@ export default class NewAlias extends Vue {
           }) as string;
           break;
         case 401:
-          account.token = null;
+          getEmitter().emit('needs-login');
           break;
       }
       this.alertVisible = true;

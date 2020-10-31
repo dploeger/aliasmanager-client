@@ -3,6 +3,7 @@
 !.eslintrc.js
 !babel.config.js
 !vue.config.js
+!bootstrap-vue.js
 
 .DS_Store
 node_modules

@@ -1,9 +1,10 @@
 <template>
   <div>
-    <v-text-field
+    <b-input
       v-model="filter"
-      hint="Enter a filter text"
-      label="Filter"
+      name="filter"
+      data-test="filterInput"
+      :placeholder="$t('ui.filter.placeholder')"
       @keyup="$emit('set-filter', filter)"
     />
   </div>

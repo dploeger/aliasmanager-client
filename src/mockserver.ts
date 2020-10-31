@@ -1,4 +1,27 @@
-import { Server, Response } from 'miragejs';
+import { Response, Server } from 'miragejs';
+import { sign, verify } from 'jwt-then';
+
+async function checkAuth(): Promise<Response | null> {
+  const errorResponse = new Response(401, undefined, {
+    message: 'Invalid authentication data. Please try to login again.',
+  });
+  const tokenCookie = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('token'));
+  if (!tokenCookie) {
+    return errorResponse;
+  }
+  const token = tokenCookie.split('=')[1];
+  try {
+    const decoded = await verify(token, 'secret');
+    if ((decoded as any)['username'] !== 'test') {
+      return errorResponse;
+    }
+    return null;
+  } catch (e) {
+    return errorResponse;
+  }
+}
 
 export function makeMockServer({ environment = 'development' } = {}) {
   let aliases = [
@@ -24,7 +47,7 @@ export function makeMockServer({ environment = 'development' } = {}) {
   return new Server({
     environment,
     routes() {
-      this.get('/api/token', (schema, request) => {
+      this.get('/api/login', async (schema, request) => {
         if (!('Authorization' in request.requestHeaders)) {
           return new Response(401, undefined, {
             message: 'No authentication data found.',
@@ -42,15 +65,28 @@ export function makeMockServer({ environment = 'development' } = {}) {
             message: 'Invalid username or password',
           });
         } else {
-          return new Response(200, undefined, 'TOKEN');
+          const token = await sign(
+            {
+              username: 'test',
+            },
+            'secret',
+            {
+              expiresIn: '30s',
+            },
+          );
+          document.cookie = `token=${token}`;
+          return new Response(204);
         }
       });
+      this.get('/api/logout', async () => {
+        document.cookie = 'token= ; expires = Thu, 01 Jan 1970 00:00:00 GMT';
+        return new Response(204);
+      });
 
-      this.get('/api/account/alias', (schema, request) => {
-        if (request.requestHeaders['Authorization'] != 'Bearer TOKEN') {
-          return new Response(401, undefined, {
-            message: 'Invalid authentication data. Please try to login again.',
-          });
+      this.get('/api/account/alias', async (schema, request) => {
+        const authResponse = await checkAuth();
+        if (authResponse) {
+          return authResponse;
         }
         return aliases.filter((value) => {
           if ('filter' in request.queryParams) {
@@ -64,11 +100,10 @@ export function makeMockServer({ environment = 'development' } = {}) {
         });
       });
 
-      this.post('/api/account/alias', (schema, request) => {
-        if (request.requestHeaders['Authorization'] != 'Bearer TOKEN') {
-          return new Response(401, undefined, {
-            message: 'Invalid authentication data. Please try to login again.',
-          });
+      this.post('/api/account/alias', async (schema, request) => {
+        const authResponse = await checkAuth();
+        if (authResponse) {
+          return authResponse;
         }
         const body = JSON.parse(request.requestBody);
         if (aliases.some((alias) => alias.address === body.address)) {
@@ -80,11 +115,10 @@ export function makeMockServer({ environment = 'development' } = {}) {
         return new Response(204);
       });
 
-      this.put('/api/account/alias/:alias', (schema, request) => {
-        if (request.requestHeaders['Authorization'] != 'Bearer TOKEN') {
-          return new Response(401, undefined, {
-            message: 'Invalid authentication data. Please try to login again.',
-          });
+      this.put('/api/account/alias/:alias', async (schema, request) => {
+        const authResponse = await checkAuth();
+        if (authResponse) {
+          return authResponse;
         }
         if (
           aliases.some((alias) => alias.address === request.params['alias'])
@@ -109,11 +143,10 @@ export function makeMockServer({ environment = 'development' } = {}) {
         }
       });
 
-      this.delete('/api/account/alias/:alias', (schema, request) => {
-        if (request.requestHeaders['Authorization'] != 'Bearer TOKEN') {
-          return new Response(401, undefined, {
-            message: 'Invalid authentication data. Please try to login again.',
-          });
+      this.delete('/api/account/alias/:alias', async (schema, request) => {
+        const authResponse = await checkAuth();
+        if (authResponse) {
+          return authResponse;
         }
 
         if (

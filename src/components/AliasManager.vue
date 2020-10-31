@@ -1,46 +1,61 @@
 <template>
   <div>
-    <div>
-      <NewAlias
-        ref="newAlias"
-        @new-alias-created="$refs['alias-list'].$emit('refresh')"
-      />
-    </div>
-    <div>
-      <AliasList ref="alias-list" :logged-in="loggedIn" />
-    </div>
-    <v-dialog v-model="dialog" data-test="loginDialog" persistent>
-      <v-form @submit="login">
-        <v-card>
-          <v-card-title>{{ $t('login.title') }}</v-card-title>
-          <v-card-text>
-            <v-alert :type="alertType" :value="alertVisible">
-              {{ alertMessage }}
-            </v-alert>
-            <v-text-field
-              ref="usernameInput"
-              v-model="username"
-              autocomplete="username"
-              :label="$t('login.username')"
-              :hint="$t('login.username')"
-            />
-            <v-text-field
-              v-model="password"
-              autocomplete="current-password"
-              :hint="$t('login.password')"
-              :label="$t('login.password')"
-              type="password"
-            />
-          </v-card-text>
-          <v-card-actions>
-            <v-spacer />
-            <v-btn type="submit" color="primary" text @click="login">
-              {{ $t('dialog.login') }}
-            </v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-form>
-    </v-dialog>
+    <b-row>
+      <b-col>
+        <NewAlias ref="newAlias" />
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col>
+        <AliasList ref="alias-list" />
+      </b-col>
+    </b-row>
+    <b-modal
+      v-model="dialog"
+      :title="$t('login.title')"
+      data-test="loginDialog"
+      no-close-on-backdrop
+      ok-only
+      :ok-title="$t('dialog.login')"
+      centered
+      no-close-on-esc
+      hide-header-close
+      @ok="login"
+    >
+      <b-alert
+        v-model="alertVisible"
+        data-test="loginAlert"
+        :variant="alertType"
+      >
+        {{ alertMessage }}
+      </b-alert>
+      <b-form data-test="loginForm" @submit="login">
+        <b-form-group :label="$t('login.username')" label-for="username">
+          <b-form-input
+            ref="usernameInput"
+            v-model="username"
+            autofocus
+            name="username"
+            title="username"
+            data-test="username"
+            autocomplete="username"
+            :placeholder="$t('login.username')"
+          />
+        </b-form-group>
+        <b-form-group :label="$t('login.password')" label-for="password">
+          <b-form-input
+            v-model="password"
+            name="password"
+            title="password"
+            data-test="password"
+            autocomplete="current-password"
+            :placeholder="$t('login.password')"
+            type="password"
+          />
+        </b-form-group>
+        <b-btn hidden type="submit" />
+      </b-form>
+    </b-modal>
   </div>
 </template>
 
@@ -50,11 +65,7 @@ import Vue from 'vue';
 import AliasList from '@/components/AliasList.vue';
 import NewAlias from '@/components/NewAlias.vue';
 import Axios from 'axios';
-import { getModule } from 'vuex-module-decorators';
-import { Account } from '@/stores/modules/Account';
-import { Watch } from 'vue-property-decorator';
-
-const account = getModule(Account);
+import { getEmitter } from '@/emitter';
 
 @Component({
   name: 'AliasManager',
@@ -63,50 +74,35 @@ const account = getModule(Account);
 export default class AliasManager extends Vue {
   public username: string = '';
   public password: string = '';
-  public alertType: string = 'error';
+  public alertType: string = 'danger';
   public alertMessage: string = '';
   public alertVisible: boolean = false;
-  public loggedIn: boolean = false;
 
-  public get dialog(): boolean {
-    return account.token === null;
-  }
+  public dialog: boolean = false;
 
-  @Watch('dialog', { immediate: true })
-  public onDialogChange(newValue: boolean) {
-    if (newValue) {
-      this.$nextTick(() => {
-        const focusInterval = window.setInterval(() => {
-          if ((this.$refs.usernameInput as any).isBooted) {
-            clearInterval(focusInterval);
-            ((this.$refs.usernameInput as Vue).$refs
-              .input as HTMLInputElement).focus();
-          }
-        }, 500);
-      });
-    }
+  created() {
+    getEmitter().on('needs-login', () => {
+      this.dialog = true;
+    });
   }
 
   async login(event: Event) {
-    event.preventDefault();
+    if (event) {
+      event.preventDefault();
+    }
     try {
-      const response = await Axios.get(`/api/token`, {
+      await Axios.get(`/api/login`, {
         auth: {
           username: this.username,
           password: this.password,
         },
       });
       this.password = '';
-      account.updateUsername(this.username);
-      account.updateToken(response.data);
-      this.loggedIn = true;
-      this.$nextTick(() => {
-        (((this.$refs.newAlias as Vue).$refs.input as Vue).$refs
-          .input as HTMLInputElement).focus();
-      });
+      this.dialog = false;
+      getEmitter().emit('refresh');
     } catch (e) {
       this.alertMessage = e.response.data.message;
-      this.alertType = 'error';
+      this.alertType = 'danger';
       this.alertVisible = true;
     }
   }

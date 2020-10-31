@@ -1,56 +1,76 @@
 <template>
   <div>
-    <v-alert v-model="alertVisible" :type="alertType" dismissible>
+    <b-alert v-model="alertVisible" :variant="alertType">
       {{ alertMessage }}
-    </v-alert>
-    <AliasFilter
-      @set-filter="
-        filter = $event;
-        loadAliases();
-      "
-    />
-    <v-data-table :items="aliases" :loading="loading" :headers="headers">
-      <template #[`item.address`]="props">
-        <v-dialog persistent>
-          <v-card>
-            <v-card-title>Edit {{ props.item.address }}</v-card-title>
-            <v-card-text>
-              <v-text-field
-                ref="editInput"
-                v-model="oldAddress"
-                label="Edit"
-                single-line
-              />
-              <v-card-actions>
-                <v-spacer />
-                <v-btn text color="primary"> Ok </v-btn>
-                <v-btn text color="cancel">Cancel </v-btn>
-              </v-card-actions>
-            </v-card-text>
-          </v-card>
-          <template #activator="{ on }">
-            <v-btn
-              icon
-              :title="`Edit ${props.item.address}`"
-              v-on="editAddress(props.item.address, on)"
-            >
-              <v-icon>mdi-pencil</v-icon>
-            </v-btn>
-          </template>
-        </v-dialog>
-        <span tabindex="0">{{ props.item.address }}</span>
-      </template>
-      <template #[`item.delete`]="props">
-        <v-btn
-          icon
-          :title="`Delete alias ${props.item.address}`"
-          tabindex="0"
-          @click="deleteAlias(props.item.address)"
+    </b-alert>
+    <b-row>
+      <b-col>
+        <AliasFilter
+          @set-filter="
+            filter = $event;
+            loadAliases();
+          "
+        />
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col>
+        <b-table
+          :items="aliases"
+          responsive="true"
+          :fields="headers"
+          striped
+          dark
+          :busy="loading"
+          :show-empty="true"
         >
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
-    </v-data-table>
+          <template #empty>
+            <b-alert data-test="noEntriesFound" :show="true" variant="info">
+              {{ $t('table.noEntriesFound') }}
+            </b-alert>
+          </template>
+          <template #head(actions)="">
+            <b-btn :title="$t('table.refresh')" @click="loadAliases">
+              {{ $t('table.refresh') }}
+            </b-btn>
+          </template>
+          <template #cell(address)="data">
+            <b-link
+              href="#"
+              :title="$t('table.edit', { alias: data.value })"
+              data-test="aliasEntry"
+              @click="showEditBox(data.value)"
+            >
+              {{ data.value }}
+            </b-link>
+          </template>
+          <template #cell(actions)="data">
+            <b-btn
+              pill
+              variant="light"
+              :title="$t('table.delete', { alias: data.item.address })"
+              data-test="deleteAliasButton"
+              @click="deleteAlias(data.item.address)"
+            >
+              <b-icon-trash />
+            </b-btn>
+          </template>
+        </b-table>
+      </b-col>
+    </b-row>
+    <b-modal :visible="editVisible" data-test="editDialog" ok-only @ok="save">
+      <b-form data-test="editForm" @submit="save">
+        <b-form-input
+          ref="editInput"
+          v-model="editAlias"
+          autofocus
+          data-test="editInput"
+          :placeholder="$t('ui.alias.placeholder')"
+          :state="editAliasValid"
+          type="email"
+        />
+      </b-form>
+    </b-modal>
   </div>
 </template>
 
@@ -59,11 +79,7 @@ import Component from 'vue-class-component';
 import Vue from 'vue';
 import AliasFilter from '@/components/AliasFilter.vue';
 import Axios from 'axios';
-import { Prop, Watch } from 'vue-property-decorator';
-import { getModule } from 'vuex-module-decorators';
-import { Account } from '@/stores/modules/Account';
-
-const account = getModule(Account);
+import { getEmitter } from '@/emitter';
 
 @Component({
   name: 'AliasList',
@@ -71,29 +87,44 @@ const account = getModule(Account);
 })
 export default class AliasList extends Vue {
   public loading: boolean = false;
-  public alertType: string = 'error';
+  public alertType: string = 'danger';
   public alertMessage: string = '';
   public alertVisible: boolean = false;
-  @Prop({ default: false })
-  public loggedIn: boolean = false;
+  public editVisible: boolean = false;
+  public editAlias: string = '';
   public aliases = [];
   public filter = '';
-  public headers = [
-    {
-      text: 'Address',
-      width: '100%',
-      value: 'address',
-    },
-    {
-      text: '',
-      value: 'delete',
-      sortable: false,
-    },
-  ];
+
   public oldAddress = '';
+  public eMailRegex: RegExp = /^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$/;
+
+  public mounted() {
+    this.loadAliases();
+  }
+
+  public get headers(): any {
+    return [
+      {
+        label: this.$t('table.address'),
+        key: 'address',
+        thStyle: 'width:100%',
+      },
+      {
+        label: '',
+        key: 'actions',
+      },
+    ];
+  }
+
+  public get editAliasValid(): boolean | null {
+    if (this.editAlias === '') {
+      return null;
+    }
+    return this.eMailRegex.test(this.editAlias);
+  }
 
   created() {
-    this.$on('refresh', this.loadAliases);
+    getEmitter().on('refresh', this.loadAliases);
   }
 
   async loadAliases() {
@@ -101,11 +132,6 @@ export default class AliasList extends Vue {
       this.loading = true;
       const response = await Axios.get(
         `/api/account/alias?filter=${this.filter}`,
-        {
-          headers: {
-            Authorization: `Bearer ${account.token}`,
-          },
-        },
       );
       this.loading = false;
       this.aliases = response.data;
@@ -113,40 +139,28 @@ export default class AliasList extends Vue {
       this.loading = false;
       switch (error.response.status) {
         case 401:
-          account.token = null;
+          this.aliases = [];
+          getEmitter().emit('needs-login');
           break;
       }
-      this.alertType = 'error';
-      this.alertVisible = true;
-      this.aliases = [];
     }
   }
 
-  @Watch('loggedIn')
-  async onLoggedIn(value: boolean) {
-    if (value) {
-      await this.loadAliases();
-    }
-  }
-
-  editAddress(oldAddress: string, eventHandler) {
+  editAddress(oldAddress: string, eventHandler: any) {
     this.oldAddress = oldAddress;
     eventHandler.click();
   }
 
-  async save(newAddress: string) {
+  async save(e: Event) {
+    if (e) {
+      e.preventDefault();
+    }
     try {
-      await Axios.put(
-        `/api/account/alias/${this.oldAddress}`,
-        {
-          address: newAddress,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${account.token}`,
-          },
-        },
-      );
+      await Axios.put(`/api/account/alias/${this.oldAddress}`, {
+        address: this.editAlias,
+      });
+      this.editAlias = '';
+      this.editVisible = false;
       return this.loadAliases();
     } catch (error) {
       this.loading = false;
@@ -158,25 +172,21 @@ export default class AliasList extends Vue {
           break;
         case 409:
           this.alertMessage = this.$t('errors.409', {
-            alias: newAddress,
+            alias: this.editAlias,
           }) as string;
           break;
         case 401:
-          account.token = null;
+          getEmitter().emit('needs-login');
           break;
       }
-      this.alertType = 'error';
+      this.alertType = 'danger';
       this.alertVisible = true;
     }
   }
 
   async deleteAlias(address: string) {
     try {
-      await Axios.delete(`/api/account/alias/${address}`, {
-        headers: {
-          Authorization: `Bearer ${account.token}`,
-        },
-      });
+      await Axios.delete(`/api/account/alias/${address}`, {});
       return this.loadAliases();
     } catch (error) {
       this.loading = false;
@@ -187,12 +197,18 @@ export default class AliasList extends Vue {
           }) as string;
           break;
         case 401:
-          account.token = null;
+          getEmitter().emit('needs-login');
           break;
       }
-      this.alertType = 'error';
+      this.alertType = 'danger';
       this.alertVisible = true;
     }
+  }
+
+  public showEditBox(alias: string) {
+    this.oldAddress = alias;
+    this.editAlias = alias;
+    this.editVisible = true;
   }
 }
 </script>

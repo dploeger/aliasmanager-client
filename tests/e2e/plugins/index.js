@@ -15,6 +15,15 @@ module.exports = (on, config) => {
   //  watchOptions: {}
   // }))
 
+  require('@cypress/code-coverage/task')(on, config);
+
+  on('before:browser:launch', (browser, launchOptions) => {
+    if (browser.family === 'chromium' && browser.name !== 'electron') {
+      launchOptions.preferences.default.intl = { accept_languages: 'en' };
+      return launchOptions;
+    }
+  });
+
   return Object.assign({}, config, {
     fixturesFolder: 'tests/e2e/fixtures',
     integrationFolder: 'tests/e2e/specs',

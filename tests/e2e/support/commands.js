@@ -26,9 +26,9 @@
 
 Cypress.Commands.add('login', (username, password) => {
   cy.visit('/');
-  cy.get('.v-dialog').within(() => {
-    cy.get('input[type=text]').type(username);
-    cy.get('input[type=password]').type(password);
-    cy.get('button[type=submit]').click();
+  cy.get('[data-test=loginDialog]').within(() => {
+    cy.get('[data-test=username]').type(username);
+    cy.get('[data-test=password]').type(password);
+    cy.get('[data-test=loginForm]').submit();
   });
 });
