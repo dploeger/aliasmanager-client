@@ -47,7 +47,7 @@ export function makeMockServer({ environment = 'development' } = {}) {
   return new Server({
     environment,
     routes() {
-      this.get('/api/login', async (schema, request) => {
+      this.get('/api/auth/login', async (schema, request) => {
         if (!('Authorization' in request.requestHeaders)) {
           return new Response(401, undefined, {
             message: 'No authentication data found.',
@@ -78,7 +78,7 @@ export function makeMockServer({ environment = 'development' } = {}) {
           return new Response(204);
         }
       });
-      this.get('/api/logout', async () => {
+      this.get('/api/auth/logout', async () => {
         document.cookie = 'token= ; expires = Thu, 01 Jan 1970 00:00:00 GMT';
         return new Response(204);
       });

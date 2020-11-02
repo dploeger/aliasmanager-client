@@ -35,7 +35,7 @@ import { getEmitter } from '@/emitter';
 })
 export default class App extends Vue {
   public async logout() {
-    await Axios.get('/api/logout');
+    await Axios.get('/api/auth/logout');
     getEmitter().emit('refresh');
   }
 }

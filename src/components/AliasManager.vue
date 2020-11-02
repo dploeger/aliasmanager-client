@@ -91,7 +91,7 @@ export default class AliasManager extends Vue {
       event.preventDefault();
     }
     try {
-      await Axios.get(`/api/login`, {
+      await Axios.get(`/api/auth/login`, {
         auth: {
           username: this.username,
           password: this.password,
