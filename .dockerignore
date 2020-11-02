@@ -1,0 +1,7 @@
+node_modules
+tests
+dist
+coverage
+.idea
+.nyc_output
+README.md
