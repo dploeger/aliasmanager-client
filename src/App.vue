@@ -4,6 +4,11 @@
       <b-col>
         <b-navbar type="dark" variant="dark">
           <b-navbar-brand>
+            <img
+              src="./assets/logo.png"
+              class="d-inline-block align-top"
+              alt="Aliasmanager logo"
+            />
             {{ $t('app.title') }}
           </b-navbar-brand>
           <b-navbar-nav class="ml-auto">

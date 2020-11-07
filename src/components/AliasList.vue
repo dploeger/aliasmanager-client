@@ -31,7 +31,7 @@
           </template>
           <template #head(actions)="">
             <b-btn :title="$t('table.refresh')" @click="loadAliases">
-              {{ $t('table.refresh') }}
+              <b-icon-arrow-clockwise />
             </b-btn>
           </template>
           <template #cell(address)="data">
@@ -46,8 +46,7 @@
           </template>
           <template #cell(actions)="data">
             <b-btn
-              pill
-              variant="light"
+              squared
               :title="$t('table.delete', { alias: data.item.address })"
               data-test="deleteAliasButton"
               @click="deleteAlias(data.item.address)"
@@ -56,6 +55,37 @@
             </b-btn>
           </template>
         </b-table>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col cols="8">
+        <b-pagination
+          v-model="page"
+          :per-page="pageSize"
+          :total-rows="total"
+          :label-first-page="$t('pagination.first')"
+          :label-prev-page="$t('pagination.prev')"
+          :label-next-page="$t('pagination.next')"
+          :label-last-page="$t('pagination.last')"
+          :label-page="
+            (page) => {
+              return $t('pagination.page', { page: page });
+            }
+          "
+          @change="changePage"
+        />
+      </b-col>
+      <b-col cols="4">
+        <b-input-group :prepend="$t('ui.pagination.pageSize')">
+          <b-select
+            id="rowsPerPage"
+            v-model="pageSize"
+            :title="$t('ui.pagination.pageSize')"
+            :options="[5, 10, 15, 20, 50]"
+            data-test="pageSizeSelect"
+            @change="loadAliases"
+          />
+        </b-input-group>
       </b-col>
     </b-row>
     <b-modal :visible="editVisible" data-test="editDialog" ok-only @ok="save">
@@ -97,6 +127,9 @@ export default class AliasList extends Vue {
 
   public oldAddress = '';
   public eMailRegex: RegExp = /^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$/;
+  public pageSize = 10;
+  public page = 1;
+  public total = 0;
 
   public mounted() {
     this.loadAliases();
@@ -131,10 +164,11 @@ export default class AliasList extends Vue {
     try {
       this.loading = true;
       const response = await Axios.get(
-        `/api/account/alias?filter=${this.filter}`,
+        `/api/account/alias?filter=${this.filter}&page=${this.page}&pageSize=${this.pageSize}`,
       );
       this.loading = false;
-      this.aliases = response.data;
+      this.aliases = response.data.results;
+      this.total = response.data.total;
     } catch (error) {
       this.loading = false;
       switch (error.response.status) {
@@ -209,6 +243,11 @@ export default class AliasList extends Vue {
     this.oldAddress = alias;
     this.editAlias = alias;
     this.editVisible = true;
+  }
+
+  public changePage(page: number) {
+    this.page = page;
+    this.loadAliases();
   }
 }
 </script>

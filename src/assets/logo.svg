@@ -1,1 +1,48 @@
-<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 87.5 100"><defs><style>.cls-1{fill:#1697f6;}.cls-2{fill:#7bc6ff;}.cls-3{fill:#1867c0;}.cls-4{fill:#aeddff;}</style></defs><title>Artboard 46</title><polyline class="cls-1" points="43.75 0 23.31 0 43.75 48.32"/><polygon class="cls-2" points="43.75 62.5 43.75 100 0 14.58 22.92 14.58 43.75 62.5"/><polyline class="cls-3" points="43.75 0 64.19 0 43.75 48.32"/><polygon class="cls-4" points="64.58 14.58 87.5 14.58 43.75 100 43.75 62.5 64.58 14.58"/></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512px" height="512px" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon</title>
+    <defs>
+        <linearGradient x1="50%" y1="-140.1213%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#E02020" offset="0%"></stop>
+            <stop stop-color="#FA6400" offset="16.7194618%"></stop>
+            <stop stop-color="#F7B500" offset="33.3898731%"></stop>
+            <stop stop-color="#6DD400" offset="50.0513863%"></stop>
+            <stop stop-color="#0091FF" offset="66.5668601%"></stop>
+            <stop stop-color="#6236FF" offset="83.3200233%"></stop>
+            <stop stop-color="#B620E0" offset="100%"></stop>
+        </linearGradient>
+        <path d="M38.8333333,466 C38.8333333,466 0,466 0,427.2 C0,388.4 38.8333333,272 233,272 C427.166667,272 466,388.4 466,427.2 C466,466 427.166667,466 427.166667,466 L38.8333333,466 Z" id="path-2"></path>
+        <filter x="-3.4%" y="-8.2%" width="113.7%" height="133.0%" filterUnits="objectBoundingBox" id="filter-3">
+            <feOffset dx="16" dy="16" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="8" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="198.890502%" id="linearGradient-4">
+            <stop stop-color="#E02020" offset="0%"></stop>
+            <stop stop-color="#FA6400" offset="16.7194618%"></stop>
+            <stop stop-color="#F7B500" offset="33.3898731%"></stop>
+            <stop stop-color="#6DD400" offset="50.0513863%"></stop>
+            <stop stop-color="#0091FF" offset="66.5668601%"></stop>
+            <stop stop-color="#6236FF" offset="83.3200233%"></stop>
+            <stop stop-color="#B620E0" offset="100%"></stop>
+        </linearGradient>
+        <path d="M233.5,233 C297.841173,233 350,180.841173 350,116.5 C350,52.1588266 297.841173,0 233.5,0 C169.158827,0 117,52.1588266 117,116.5 C117,180.841173 169.158827,233 233.5,233 Z" id="path-5"></path>
+        <filter x="-6.9%" y="-6.9%" width="127.5%" height="127.5%" filterUnits="objectBoundingBox" id="filter-6">
+            <feOffset dx="16" dy="16" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="8" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(23.000000, 23.000000)" fill-rule="nonzero">
+            <g id="Path">
+                <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                <use fill="url(#linearGradient-1)" xlink:href="#path-2"></use>
+            </g>
+            <g id="Path">
+                <use fill="black" fill-opacity="1" filter="url(#filter-6)" xlink:href="#path-5"></use>
+                <use fill="url(#linearGradient-4)" xlink:href="#path-5"></use>
+            </g>
+        </g>
+    </g>
+</svg>

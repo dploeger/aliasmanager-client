@@ -1,12 +1,27 @@
 <template>
   <div>
-    <b-input
-      v-model="filter"
-      name="filter"
-      data-test="filterInput"
-      :placeholder="$t('ui.filter.placeholder')"
-      @keyup="$emit('set-filter', filter)"
-    />
+    <b-input-group>
+      <b-input
+        v-model="filter"
+        name="filter"
+        data-test="filterInput"
+        :placeholder="$t('ui.filter.placeholder')"
+        @keyup="$emit('set-filter', filter)"
+      />
+      <b-input-group-append>
+        <b-btn
+          data-test="clearFilterButton"
+          squared
+          :title="$t('ui.filter.clear')"
+          @click="
+            filter = '';
+            $emit('set-filter', filter);
+          "
+        >
+          <b-icon-x />
+        </b-btn>
+      </b-input-group-append>
+    </b-input-group>
   </div>
 </template>
 

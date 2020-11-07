@@ -16,7 +16,10 @@
           data-test="newAliasInput"
           :placeholder="$t('ui.alias.placeholder')"
           :state="aliasValid"
+          aria-describedby="newAliasFeedback"
+          :aria-invalid="!aliasValid"
           type="email"
+          :autofocus="true"
         />
         <b-input-group-append>
           <b-btn
@@ -29,6 +32,9 @@
             <b-icon-plus />
           </b-btn>
         </b-input-group-append>
+        <span id="newAliasFeedback" class="sr-only">
+          {{ $t('errors.invalidmail', { alias: alias }) }}
+        </span>
       </b-input-group>
     </b-form>
   </div>

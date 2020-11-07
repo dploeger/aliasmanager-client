@@ -88,16 +88,38 @@ export function makeMockServer({ environment = 'development' } = {}) {
         if (authResponse) {
           return authResponse;
         }
-        return aliases.filter((value) => {
-          if ('filter' in request.queryParams) {
-            const filterRegexp = new RegExp(
-              `^.+${request.queryParams.filter}.+$`,
-            );
-            return filterRegexp.test(value.address);
-          }
+        const pageSize: number =
+          'pageSize' in request.queryParams
+            ? parseInt(request.queryParams.pageSize)
+            : 10;
+        const page: number =
+          'page' in request.queryParams
+            ? parseInt(request.queryParams.page)
+            : 0;
+        const returnedAliases = aliases
+          .filter((value) => {
+            if ('filter' in request.queryParams) {
+              const filterRegexp = new RegExp(
+                `^.+${request.queryParams.filter}.+$`,
+              );
+              return filterRegexp.test(value.address);
+            }
 
-          return true;
-        });
+            return true;
+          })
+          .sort((a, b) => {
+            return ('' + a.address).localeCompare(b.address);
+          });
+
+        return {
+          pageSize: pageSize,
+          page: page,
+          total: returnedAliases.length,
+          results: returnedAliases.slice(
+            (page - 1) * pageSize,
+            page * pageSize,
+          ),
+        };
       });
 
       this.post('/api/account/alias', async (schema, request) => {

@@ -10,10 +10,18 @@
   "table.refresh": "Refresh",
   "table.noEntriesFound": "No entries found",
   "ui.filter.placeholder": "Filter",
+  "ui.filter.clear": "Clear filter",
   "ui.alias.placeholder": "New alias",
   "ui.alias.create": "Add new alias",
   "ui.alias.save": "Save alias",
+  "ui.pagination.pageSize": "Rows per page",
   "ui.logout": "Logout",
+  "errors.invalidmail": "Alias {alias} is not a valid E-Mail address",
   "errors.409": "Alias {alias} already exists.",
-  "errors.404": "Alias {alias} not found."
+  "errors.404": "Alias {alias} not found.",
+  "pagination.first": "Go to first page",
+  "pagination.prev": "Go to previous page",
+  "pagination.next": "Go to next page",
+  "pagination.last": "Go to last page",
+  "pagination.page": "Go to page {page}"
 }

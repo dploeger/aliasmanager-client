@@ -40,10 +40,35 @@ describe('The list of aliases', () => {
     cy.get('[data-test=aliasEntry').should('have.lengthOf', 6);
     cy.get('[data-test=filterInput').type('1');
     cy.get('[data-test=aliasEntry').should('have.lengthOf', 1);
-    cy.get('[data-test=filterInput').clear();
+    cy.get('[data-test=clearFilterButton').click();
     cy.get('[data-test=aliasEntry').should('have.lengthOf', 6);
     cy.get('[data-test=filterInput').type('notexists');
     cy.get('[data-test=noEntriesFound]').should('exist');
     cy.contains('No entries found');
+  });
+  describe('has pagination and', () => {
+    it('only shows the selected number of items per page', () => {
+      cy.login('test', 'test');
+      cy.get('[data-test=pageSizeSelect]').select('5');
+      cy.get('[data-test=aliasEntry').should('have.lengthOf', 5);
+    });
+    it('switches pages', () => {
+      cy.login('test', 'test');
+      cy.get('[data-test=aliasEntry').should('have.lengthOf', 6);
+      cy.get('[data-test=pageSizeSelect]').select('5');
+      cy.get('[aria-label="Go to next page"]').click();
+      cy.get('[data-test=aliasEntry').should('have.lengthOf', 1);
+      cy.get('[aria-label="Go to previous page"]').click();
+      cy.get('[data-test=aliasEntry').should('have.lengthOf', 5);
+    });
+    it('switches pages using page numbers', () => {
+      cy.login('test', 'test');
+      cy.get('[data-test=aliasEntry').should('have.lengthOf', 6);
+      cy.get('[data-test=pageSizeSelect]').select('5');
+      cy.get('[aria-label="Go to page 2"]').click();
+      cy.get('[data-test=aliasEntry').should('have.lengthOf', 1);
+      cy.get('[aria-label="Go to page 1"]').click();
+      cy.get('[data-test=aliasEntry').should('have.lengthOf', 5);
+    });
   });
 });
