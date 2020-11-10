@@ -1,42 +1,43 @@
 <template>
-  <div>
-    <b-alert
-      v-model="alertVisible"
-      data-test="newAliasAlert"
-      :variant="alertType"
-      dismissible
-    >
-      {{ alertMessage }}
-    </b-alert>
-    <b-form data-test="newAliasForm" @submit="addAlias">
-      <b-input-group>
-        <b-form-input
-          ref="input"
-          v-model="alias"
-          data-test="newAliasInput"
-          :placeholder="$t('ui.alias.placeholder')"
-          :state="aliasValid"
-          aria-describedby="newAliasFeedback"
-          :aria-invalid="!aliasValid"
-          type="email"
-          :autofocus="true"
-        />
-        <b-input-group-append>
-          <b-btn
-            variant="primary"
-            data-test="newAliasButton"
-            squared
-            :title="$t('ui.alias.create')"
-            @click="addAlias"
-          >
-            <b-icon-plus />
-          </b-btn>
-        </b-input-group-append>
-        <span id="newAliasFeedback" class="sr-only">
-          {{ $t('errors.invalidmail', { alias: alias }) }}
-        </span>
-      </b-input-group>
-    </b-form>
+  <div class="columns">
+    <div class="column">
+      <b-message
+        v-model="alertVisible"
+        data-test="loginAlert"
+        :type="alertType"
+      >
+        {{ alertMessage }}
+      </b-message>
+      <form data-test="newAliasForm" @submit="addAlias">
+        <b-field
+          :label="$t('ui.alias.placeholder')"
+          label-for="newAlias"
+          label-position="on-border"
+          :type="alias === '' ? '' : aliasValid ? 'is-success' : 'is-danger'"
+          :message="
+            aliasValid ? '' : $t('errors.invalidmail', { alias: alias })
+          "
+        >
+          <b-input
+            id="newAlias"
+            ref="input"
+            v-model="alias"
+            class="is-flex-grow-1"
+            data-test="newAliasInput"
+          />
+          <p class="control">
+            <b-button
+              class="button is-primary"
+              data-test="newAliasButton"
+              :title="$t('ui.filter.clear')"
+              @click="addAlias"
+            >
+              <b-icon icon="plus" />
+            </b-button>
+          </p>
+        </b-field>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -52,15 +53,12 @@ import { getEmitter } from '@/emitter';
 export default class NewAlias extends Vue {
   public alias: string = '';
   public alertVisible: boolean = false;
-  public alertType: string = 'danger';
+  public alertType: string = 'is-danger';
   public alertMessage: string = '';
   public eMailRegex: RegExp = /^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$/;
 
   public get aliasValid(): boolean | null {
-    if (this.alias === '') {
-      return null;
-    }
-    return this.eMailRegex.test(this.alias);
+    return this.alias === '' || this.eMailRegex.test(this.alias);
   }
 
   public async addAlias(e: Event) {
@@ -73,7 +71,7 @@ export default class NewAlias extends Vue {
       getEmitter().emit('refresh');
       this.alertVisible = false;
     } catch (error) {
-      this.alertType = 'danger';
+      this.alertType = 'is-danger';
       switch (error.response.status) {
         case 409:
           this.alertMessage = this.$t('errors.409', {

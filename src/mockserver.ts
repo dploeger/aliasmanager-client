@@ -7,7 +7,7 @@ async function checkAuth(): Promise<Response | null> {
   });
   const tokenCookie = document.cookie
     .split('; ')
-    .find((row) => row.startsWith('token'));
+    .find((row) => row.startsWith('AM-Token'));
   if (!tokenCookie) {
     return errorResponse;
   }
@@ -17,11 +17,25 @@ async function checkAuth(): Promise<Response | null> {
     if ((decoded as any)['username'] !== 'test') {
       return errorResponse;
     }
+    await setCookieToken();
     return null;
   } catch (e) {
     return errorResponse;
   }
 }
+
+let setCookieToken = async function () {
+  const token = await sign(
+    {
+      username: 'test',
+    },
+    'secret',
+    {
+      expiresIn: '30s',
+    },
+  );
+  document.cookie = `AM-Token=${token}; Max-Age=60`;
+};
 
 export function makeMockServer({ environment = 'development' } = {}) {
   let aliases = [
@@ -65,21 +79,12 @@ export function makeMockServer({ environment = 'development' } = {}) {
             message: 'Invalid username or password',
           });
         } else {
-          const token = await sign(
-            {
-              username: 'test',
-            },
-            'secret',
-            {
-              expiresIn: '30s',
-            },
-          );
-          document.cookie = `token=${token}`;
+          await setCookieToken();
           return new Response(204);
         }
       });
       this.get('/api/auth/logout', async () => {
-        document.cookie = 'token= ; expires = Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie = 'AM-Token= ; expires= Thu, 01 Jan 1970 00:00:00 GMT';
         return new Response(204);
       });
 

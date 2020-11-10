@@ -15,7 +15,6 @@ describe('The new alias form', () => {
     cy.login('test', 'test');
     cy.get('[data-test=newAliasInput').type('test1@test.com');
     cy.get('[data-test=newAliasButton').click();
-    cy.get('[data-test=newAliasAlert').should('be.visible');
     cy.contains('Alias test1@test.com already exists.');
   });
 });

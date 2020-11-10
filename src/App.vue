@@ -1,30 +1,34 @@
 <template>
-  <b-container fluid="md">
-    <b-row>
-      <b-col>
-        <b-navbar type="dark" variant="dark">
-          <b-navbar-brand>
-            <img
-              src="./assets/logo.png"
-              class="d-inline-block align-top"
-              alt="Aliasmanager logo"
-            />
-            {{ $t('app.title') }}
-          </b-navbar-brand>
-          <b-navbar-nav class="ml-auto">
-            <b-nav-item @click="logout">
+  <div class="container">
+    <div class="columns">
+      <div class="column pr-0">
+        <b-navbar type="is-primary">
+          <template #brand>
+            <b-navbar-item>
+              <img
+                src="./assets/logo.png"
+                class="d-inline-block align-top"
+                alt="Aliasmanager logo"
+              />
+            </b-navbar-item>
+            <b-navbar-item>
+              {{ $t('app.title') }}
+            </b-navbar-item>
+          </template>
+          <template #end>
+            <b-navbar-item @click="logout">
               {{ $t('ui.logout') }}
-            </b-nav-item>
-          </b-navbar-nav>
+            </b-navbar-item>
+          </template>
         </b-navbar>
-      </b-col>
-    </b-row>
-    <b-row>
-      <b-col>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column pr-0">
         <AliasManager />
-      </b-col>
-    </b-row>
-  </b-container>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -45,13 +49,3 @@ export default class App extends Vue {
   }
 }
 </script>
-
-<style lang="scss">
-// Import custom SASS variable overrides, or alternatively
-// define your variable overrides here instead
-@import 'styles/custom.scss';
-
-// Import Bootstrap and BootstrapVue source SCSS files
-@import '~bootstrap/scss/bootstrap.scss';
-@import '~bootstrap-vue/src/index.scss';
-</style>

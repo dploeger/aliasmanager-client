@@ -1,60 +1,77 @@
 <template>
-  <div>
-    <b-row>
-      <b-col>
-        <NewAlias ref="newAlias" />
-      </b-col>
-    </b-row>
-    <b-row>
-      <b-col>
-        <AliasList ref="alias-list" />
-      </b-col>
-    </b-row>
+  <div class="container">
+    <div class="container px-2">
+      <div class="columns">
+        <div class="column">
+          <NewAlias ref="newAlias" />
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <AliasFilter />
+        </div>
+      </div>
+      <div class="columns">
+        <div class="column">
+          <AliasList />
+        </div>
+      </div>
+    </div>
     <b-modal
       v-model="dialog"
+      has-modal-card
+      aria-role="dialog"
+      aria-modal
       :title="$t('login.title')"
       data-test="loginDialog"
-      no-close-on-backdrop
-      ok-only
-      :ok-title="$t('dialog.login')"
-      centered
-      no-close-on-esc
-      hide-header-close
-      @ok="login"
+      :can-cancel="false"
+      @after-enter="$refs.usernameInput.focus()"
     >
-      <b-alert
-        v-model="alertVisible"
-        data-test="loginAlert"
-        :variant="alertType"
-      >
-        {{ alertMessage }}
-      </b-alert>
-      <b-form data-test="loginForm" @submit="login">
-        <b-form-group :label="$t('login.username')" label-for="username">
-          <b-form-input
-            ref="usernameInput"
-            v-model="username"
-            autofocus
-            name="username"
-            title="username"
-            data-test="username"
-            autocomplete="username"
-            :placeholder="$t('login.username')"
-          />
-        </b-form-group>
-        <b-form-group :label="$t('login.password')" label-for="password">
-          <b-form-input
-            v-model="password"
-            name="password"
-            title="password"
-            data-test="password"
-            autocomplete="current-password"
-            :placeholder="$t('login.password')"
-            type="password"
-          />
-        </b-form-group>
-        <b-btn hidden type="submit" />
-      </b-form>
+      <div class="modal-card" style="width: auto">
+        <header class="modal-card-head">
+          <p class="modal-card-title">
+            {{ $t('login.title') }}
+          </p>
+        </header>
+
+        <section class="modal-card-body">
+          <b-message
+            v-model="alertVisible"
+            data-test="loginAlert"
+            :type="alertType"
+          >
+            {{ alertMessage }}
+          </b-message>
+          <form data-test="loginForm" @submit="login">
+            <b-field :label="$t('login.username')" label-for="username">
+              <b-input
+                ref="usernameInput"
+                v-model="username"
+                name="username"
+                title="$t('login.username')"
+                data-test="username"
+                autocomplete="username"
+              />
+            </b-field>
+            <b-field :label="$t('login.password')" label-for="password">
+              <b-input
+                v-model="password"
+                name="password"
+                :title="$t('login.password')"
+                data-test="password"
+                autocomplete="current-password"
+                type="password"
+                password-reveal
+              />
+            </b-field>
+            <footer class="modal-card-foot is-justify-content-flex-end">
+              <b-button native-type="submit" type="is-primary">
+                {{ $t('dialog.login') }}
+              </b-button>
+            </footer>
+          </form>
+        </section>
+      </div>
     </b-modal>
   </div>
 </template>
@@ -66,15 +83,16 @@ import AliasList from '@/components/AliasList.vue';
 import NewAlias from '@/components/NewAlias.vue';
 import Axios from 'axios';
 import { getEmitter } from '@/emitter';
+import AliasFilter from '@/components/AliasFilter.vue';
 
 @Component({
   name: 'AliasManager',
-  components: { NewAlias, AliasList },
+  components: { NewAlias, AliasList, AliasFilter },
 })
 export default class AliasManager extends Vue {
   public username: string = '';
   public password: string = '';
-  public alertType: string = 'danger';
+  public alertType: string = 'is-danger';
   public alertMessage: string = '';
   public alertVisible: boolean = false;
 
@@ -99,10 +117,11 @@ export default class AliasManager extends Vue {
       });
       this.password = '';
       this.dialog = false;
+      ((this.$refs.newAlias as Vue).$refs.input as HTMLElement).focus();
       getEmitter().emit('refresh');
     } catch (e) {
       this.alertMessage = e.response.data.message;
-      this.alertType = 'danger';
+      this.alertType = 'is-danger';
       this.alertVisible = true;
     }
   }

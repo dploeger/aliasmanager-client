@@ -1,105 +1,123 @@
 <template>
-  <div>
-    <b-alert v-model="alertVisible" :variant="alertType">
-      {{ alertMessage }}
-    </b-alert>
-    <b-row>
-      <b-col>
-        <AliasFilter
-          @set-filter="
-            filter = $event;
-            loadAliases();
-          "
-        />
-      </b-col>
-    </b-row>
-    <b-row>
-      <b-col>
+  <div class="container">
+    <div class="columns">
+      <div class="column">
         <b-table
-          :items="aliases"
-          responsive="true"
-          :fields="headers"
+          :data="aliases"
+          backend-pagination
+          backend-filtering
           striped
-          dark
-          :busy="loading"
-          :show-empty="true"
+          :mobile-cards="false"
+          @cellclick="onTableCellClick"
         >
           <template #empty>
-            <b-alert data-test="noEntriesFound" :show="true" variant="info">
+            <b-message type="is-info">
               {{ $t('table.noEntriesFound') }}
-            </b-alert>
+            </b-message>
           </template>
-          <template #head(actions)="">
-            <b-btn :title="$t('table.refresh')" @click="loadAliases">
-              <b-icon-arrow-clockwise />
-            </b-btn>
-          </template>
-          <template #cell(address)="data">
-            <b-link
-              href="#"
-              :title="$t('table.edit', { alias: data.value })"
-              data-test="aliasEntry"
-              @click="showEditBox(data.value)"
+          <b-table-column
+            v-slot="props"
+            field="address"
+            :label="$t('table.address')"
+          >
+            <span data-test="aliasEntry">
+              {{ props.row.address }}
+            </span>
+          </b-table-column>
+          <b-table-column v-slot="props" width="40">
+            <b-button
+              :title="$t('table.edit', { alias: props.row.address })"
+              @click="onEditButtonClicked($event, props.row.address)"
             >
-              {{ data.value }}
-            </b-link>
-          </template>
-          <template #cell(actions)="data">
-            <b-btn
-              squared
-              :title="$t('table.delete', { alias: data.item.address })"
+              <b-icon icon="pencil" />
+            </b-button>
+          </b-table-column>
+          <b-table-column v-slot="props" width="40">
+            <b-button
+              :title="$t('table.delete', { alias: props.row.address })"
               data-test="deleteAliasButton"
-              @click="deleteAlias(data.item.address)"
+              @click="deleteAlias(props.row.address)"
             >
-              <b-icon-trash />
-            </b-btn>
-          </template>
+              <b-icon icon="delete" />
+            </b-button>
+          </b-table-column>
         </b-table>
-      </b-col>
-    </b-row>
-    <b-row>
-      <b-col cols="8">
+      </div>
+    </div>
+    <div class="columns is-mobile">
+      <div class="column">
         <b-pagination
           v-model="page"
           :per-page="pageSize"
-          :total-rows="total"
-          :label-first-page="$t('pagination.first')"
-          :label-prev-page="$t('pagination.prev')"
-          :label-next-page="$t('pagination.next')"
-          :label-last-page="$t('pagination.last')"
-          :label-page="
-            (page) => {
-              return $t('pagination.page', { page: page });
-            }
-          "
+          :total="total"
+          :aria-next-label="$t('pagination.next')"
+          :aria-previous-label="$t('pagination.prev')"
+          :aria-page-label="$t('pagination.page')"
           @change="changePage"
         />
-      </b-col>
-      <b-col cols="4">
-        <b-input-group :prepend="$t('ui.pagination.pageSize')">
-          <b-select
-            id="rowsPerPage"
-            v-model="pageSize"
-            :title="$t('ui.pagination.pageSize')"
-            :options="[5, 10, 15, 20, 50]"
-            data-test="pageSizeSelect"
-            @change="loadAliases"
-          />
-        </b-input-group>
-      </b-col>
-    </b-row>
-    <b-modal :visible="editVisible" data-test="editDialog" ok-only @ok="save">
-      <b-form data-test="editForm" @submit="save">
-        <b-form-input
-          ref="editInput"
-          v-model="editAlias"
-          autofocus
-          data-test="editInput"
-          :placeholder="$t('ui.alias.placeholder')"
-          :state="editAliasValid"
-          type="email"
-        />
-      </b-form>
+      </div>
+      <div class="column">
+        <b-select
+          id="rowsPerPage"
+          v-model="pageSize"
+          :title="$t('ui.pagination.pageSize')"
+          :placeholder="$t('ui.pagination.pageSize')"
+          data-test="pageSizeSelect"
+          class="is-flex-grow-1"
+          @input="loadAliases"
+        >
+          <option v-for="size in pageSizes" :key="size">
+            {{ size }}
+          </option>
+        </b-select>
+      </div>
+    </div>
+    <b-modal
+      v-model="editVisible"
+      has-modal-card
+      aria-role="dialog"
+      aria-modal
+      :title="$t('table.edit', { alias: oldAddress })"
+      data-test="editDialog"
+      @after-enter="$refs.editInput.focus()"
+      @close="editButtonClicked.focus()"
+    >
+      <div class="modal-card" style="width: auto">
+        <header class="modal-card-head">
+          <p class="modal-card-title">
+            {{ $t('table.edit', { alias: oldAddress }) }}
+          </p>
+        </header>
+
+        <section class="modal-card-body">
+          <b-message
+            v-model="editAlertVisible"
+            data-test="editAliert"
+            :type="editAlertType"
+          >
+            {{ editAlertMessage }}
+          </b-message>
+          <form data-test="editForm" @submit="save">
+            <b-field :label="$t('ui.alias')" label-for="alias">
+              <b-input
+                ref="editInput"
+                v-model="editAddress"
+                name="alias"
+                title="$t('ui.alias')"
+                data-test="editInput"
+              />
+            </b-field>
+            <footer class="modal-card-foot is-justify-content-flex-end">
+              <b-button @click="editVisible = false">
+                {{ $t('dialog.cancel') }}
+              </b-button>
+              <b-button native-type="submit" type="is-primary">
+                {{ $t('dialog.save') }}
+              </b-button>
+            </footer>
+          </form>
+        </section>
+      </div>
     </b-modal>
   </div>
 </template>
@@ -107,57 +125,46 @@
 <script lang="ts">
 import Component from 'vue-class-component';
 import Vue from 'vue';
-import AliasFilter from '@/components/AliasFilter.vue';
 import Axios from 'axios';
 import { getEmitter } from '@/emitter';
 
 @Component({
   name: 'AliasList',
-  components: { AliasFilter },
 })
 export default class AliasList extends Vue {
   public loading: boolean = false;
-  public alertType: string = 'danger';
+
+  public alertType: string = 'is-danger';
   public alertMessage: string = '';
   public alertVisible: boolean = false;
+
   public editVisible: boolean = false;
-  public editAlias: string = '';
+  public oldAddress: string = '';
+  public editAddress: string = '';
+  public editAlertType: string = 'is-danger';
+  public editAlertMessage: string = '';
+  public editAlertVisible: boolean = false;
+  public editButtonClicked: any = null;
+
   public aliases = [];
   public filter = '';
 
-  public oldAddress = '';
   public eMailRegex: RegExp = /^([a-z0-9_-]+\.)*[a-z0-9_-]+@[a-z0-9_-]+(\.[a-z0-9_-]+)*\.[a-z]{2,6}$/;
   public pageSize = 10;
   public page = 1;
   public total = 0;
+  public pageSizes = [5, 10, 20, 50];
 
   public mounted() {
     this.loadAliases();
   }
 
-  public get headers(): any {
-    return [
-      {
-        label: this.$t('table.address'),
-        key: 'address',
-        thStyle: 'width:100%',
-      },
-      {
-        label: '',
-        key: 'actions',
-      },
-    ];
-  }
-
-  public get editAliasValid(): boolean | null {
-    if (this.editAlias === '') {
-      return null;
-    }
-    return this.eMailRegex.test(this.editAlias);
-  }
-
   created() {
     getEmitter().on('refresh', this.loadAliases);
+    getEmitter().on('set-filter', (filter) => {
+      this.filter = filter;
+      this.loadAliases();
+    });
   }
 
   async loadAliases() {
@@ -180,41 +187,68 @@ export default class AliasList extends Vue {
     }
   }
 
-  editAddress(oldAddress: string, eventHandler: any) {
-    this.oldAddress = oldAddress;
-    eventHandler.click();
+  public onTableCellClick(
+    row: any,
+    column: object,
+    rowIndex: number,
+    columnIndex: number,
+  ) {
+    if (columnIndex == 0) {
+      this.editAlias(row.address);
+    }
+  }
+
+  public onEditButtonClicked(e: Event, alias: string) {
+    if (e.target) {
+      this.editButtonClicked = e.target;
+      this.editAlias(alias);
+    }
+  }
+
+  public editAlias(alias: string) {
+    this.editAddress = alias;
+    this.oldAddress = alias;
+    this.editVisible = true;
   }
 
   async save(e: Event) {
     if (e) {
       e.preventDefault();
     }
-    try {
-      await Axios.put(`/api/account/alias/${this.oldAddress}`, {
-        address: this.editAlias,
-      });
-      this.editAlias = '';
+    const oldAlias = this.oldAddress;
+    const newAlias = this.editAddress;
+    if (oldAlias === newAlias) {
       this.editVisible = false;
+      return;
+    }
+    try {
+      await Axios.put(`/api/account/alias/${oldAlias}`, {
+        address: newAlias,
+      });
+      this.editVisible = false;
+      if (this.editButtonClicked) {
+        this.editButtonClicked.focus();
+      }
       return this.loadAliases();
     } catch (error) {
       this.loading = false;
       switch (error.response.status) {
         case 404:
-          this.alertMessage = this.$t('errors.404', {
-            alias: this.oldAddress,
+          this.editAlertMessage = this.$t('errors.404', {
+            alias: oldAlias,
           }) as string;
           break;
         case 409:
-          this.alertMessage = this.$t('errors.409', {
-            alias: this.editAlias,
+          this.editAlertMessage = this.$t('errors.409', {
+            alias: newAlias,
           }) as string;
           break;
         case 401:
           getEmitter().emit('needs-login');
           break;
       }
-      this.alertType = 'danger';
-      this.alertVisible = true;
+      this.editAlertType = 'is-danger';
+      this.editAlertVisible = true;
     }
   }
 
@@ -227,22 +261,16 @@ export default class AliasList extends Vue {
       switch (error.response.status) {
         case 404:
           this.alertMessage = this.$t('errors.404', {
-            alias: this.oldAddress,
+            alias: address,
           }) as string;
           break;
         case 401:
           getEmitter().emit('needs-login');
           break;
       }
-      this.alertType = 'danger';
+      this.alertType = 'is-danger';
       this.alertVisible = true;
     }
-  }
-
-  public showEditBox(alias: string) {
-    this.oldAddress = alias;
-    this.editAlias = alias;
-    this.editVisible = true;
   }
 
   public changePage(page: number) {

@@ -4,6 +4,8 @@
   "login.username": "Username",
   "login.password": "Password",
   "dialog.login": "Login",
+  "dialog.save": "Save",
+  "dialog.cancel": "Cancel",
   "table.address": "Address",
   "table.edit": "Edit {alias}",
   "table.delete": "Delete {alias}",
@@ -11,6 +13,7 @@
   "table.noEntriesFound": "No entries found",
   "ui.filter.placeholder": "Filter",
   "ui.filter.clear": "Clear filter",
+  "ui.alias": "Alias",
   "ui.alias.placeholder": "New alias",
   "ui.alias.create": "Add new alias",
   "ui.alias.save": "Save alias",
@@ -19,9 +22,7 @@
   "errors.invalidmail": "Alias {alias} is not a valid E-Mail address",
   "errors.409": "Alias {alias} already exists.",
   "errors.404": "Alias {alias} not found.",
-  "pagination.first": "Go to first page",
   "pagination.prev": "Go to previous page",
   "pagination.next": "Go to next page",
-  "pagination.last": "Go to last page",
-  "pagination.page": "Go to page {page}"
+  "pagination.page": "Go to page"
 }

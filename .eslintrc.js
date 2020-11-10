@@ -12,5 +12,6 @@ module.exports = {
   rules: {
     'no-undef': 'off',
     'vue/max-attributes-per-line': 'off',
+    'vue/html-self-closing': 'off',
   },
 };
