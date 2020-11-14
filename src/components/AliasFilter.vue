@@ -37,13 +37,21 @@ import Component from 'vue-class-component';
 import Vue from 'vue';
 import { getEmitter } from '@/emitter';
 
+/**
+ * The filter component
+ */
 @Component({
   name: 'AliasFilter',
   components: { AliasFilter },
 })
 export default class AliasFilter extends Vue {
   public filter: string = '';
+
+  /**
+   * Set the filter for other components
+   */
   public setFilter() {
+    this.$log.debug(`Setting filter to ${this.filter}`);
     getEmitter().emit('set-filter', this.filter);
   }
 }

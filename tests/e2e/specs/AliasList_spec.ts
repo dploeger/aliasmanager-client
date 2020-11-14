@@ -51,7 +51,7 @@ describe('The list of aliases', () => {
       cy.get('[data-test=aliasEntry').should('have.lengthOf', 5);
     });
     // Can not be tested because of https://github.com/buefy/buefy/issues/3028
-    it.skip('switches pages', () => {
+    it.skip('switches pages using arrow buttons', () => {
       cy.login('test', 'test');
       cy.get('[data-test=aliasEntry').should('have.lengthOf', 6);
       cy.get('[data-test=pageSizeSelect]').select('5');

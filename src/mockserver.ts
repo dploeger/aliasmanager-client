@@ -1,6 +1,9 @@
 import { Response, Server } from 'miragejs';
 import { sign, verify } from 'jwt-then';
 
+/**
+ * Check if the given authentication values are valid
+ */
 async function checkAuth(): Promise<Response | null> {
   const errorResponse = new Response(401, undefined, {
     message: 'Invalid authentication data. Please try to login again.',

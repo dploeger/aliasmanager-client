@@ -18,7 +18,7 @@
       </div>
     </div>
     <b-modal
-      v-model="dialog"
+      v-model="loginVisible"
       has-modal-card
       aria-role="dialog"
       aria-modal
@@ -85,30 +85,61 @@ import Axios from 'axios';
 import { getEmitter } from '@/emitter';
 import AliasFilter from '@/components/AliasFilter.vue';
 
+/**
+ * The main aliasmanager component
+ */
 @Component({
   name: 'AliasManager',
   components: { NewAlias, AliasList, AliasFilter },
 })
 export default class AliasManager extends Vue {
+  /**
+   * The login username
+   */
   public username: string = '';
+  /**
+   * The login password
+   */
   public password: string = '';
+
+  /**
+   * The login alert type visible
+   */
   public alertType: string = 'is-danger';
+  /**
+   * The login alert message
+   */
   public alertMessage: string = '';
+  /**
+   * Wether the login alert is visible
+   */
   public alertVisible: boolean = false;
 
-  public dialog: boolean = false;
+  /**
+   * Wether the login modal is visible
+   */
+  public loginVisible: boolean = false;
 
+  /**
+   * Register event emitter handlers
+   */
   created() {
+    this.$log.debug('Adding needs-login event handler');
     getEmitter().on('needs-login', () => {
-      this.dialog = true;
+      this.loginVisible = true;
     });
   }
 
+  /**
+   * Login into the system
+   * @param event an optional submit event
+   */
   async login(event: Event) {
     if (event) {
       event.preventDefault();
     }
     try {
+      this.$log.debug(`Logging in ${this.username}`);
       await Axios.get(`/api/auth/login`, {
         auth: {
           username: this.username,
@@ -116,11 +147,12 @@ export default class AliasManager extends Vue {
         },
       });
       this.password = '';
-      this.dialog = false;
+      this.loginVisible = false;
+      this.$log.debug('Login successful. Focusing new alias input');
       ((this.$refs.newAlias as Vue).$refs.input as HTMLElement).focus();
       getEmitter().emit('refresh');
     } catch (e) {
-      this.alertMessage = e.response.data.message;
+      this.alertMessage = this.$t('errors.401') as string;
       this.alertType = 'is-danger';
       this.alertVisible = true;
     }

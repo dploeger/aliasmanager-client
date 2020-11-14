@@ -22,6 +22,7 @@
   "errors.invalidmail": "Alias {alias} is not a valid E-Mail address",
   "errors.409": "Alias {alias} already exists.",
   "errors.404": "Alias {alias} not found.",
+  "errors.401": "Invalid username or password",
   "pagination.prev": "Go to previous page",
   "pagination.next": "Go to next page",
   "pagination.page": "Go to page"

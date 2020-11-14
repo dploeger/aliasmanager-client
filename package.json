@@ -14,7 +14,9 @@
     "extension": [
       ".ts",
       ".vue"
-    ]
+    ],
+    "sourceMap": false,
+    "instrument": true
   },
   "dependencies": {
     "axios": "^0.19.2",
@@ -24,7 +26,8 @@
     "vue-i18n": "^8.22.0",
     "vue-property-decorator": "^8.5.1",
     "mitt": "^2.1.0",
-    "buefy": "^0.9.4"
+    "buefy": "^0.9.4",
+    "vue-logger-plugin": "^1.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
